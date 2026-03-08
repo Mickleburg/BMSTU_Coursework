@@ -1,0 +1,24 @@
+#!/bin/python3
+
+import random_strings
+import sys
+
+def main():
+    try:
+        if len(sys.argv) != 3:
+            print("Error: Enter the number of lines and their length")
+            sys.exit(1)
+
+        cnt_strings, len_string = int(sys.argv[1]), int(sys.argv[2])
+
+        for rand_str in random_strings.random_strings(cnt_strings, len_string):
+            print(rand_str)
+    except ValueError as VE:
+        print(f"Error: {VE}")
+        sys.exit(1)
+    except Exception as E:
+        print(f"Error: {E}")
+        sys.exit(1)
+
+
+main()

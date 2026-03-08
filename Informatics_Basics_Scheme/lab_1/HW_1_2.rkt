@@ -1,0 +1,7 @@
+(define (linear-equation a11 a12 a21 a22 b1 b2)
+  (let ((det (- (* a11 a22) (* a21 a12))))
+    (if (= det 0)
+        (list)
+        (let ((det-1 (- (* b1 a22) (* b2 a12)))
+              (det-2 (- (* a11 b2) (* a21 b1))))
+          (list (/ det-1 det) (/ det-2 det))))))

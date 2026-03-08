@@ -1,0 +1,70 @@
+import java.util.Scanner;
+
+public class Test {
+    public static void main(String[] args) {
+        /*
+        ComplexNumber ch1 = new ComplexNumber(1, 2);
+        ComplexNumber ch2 = new ComplexNumber(3, 4);
+        ComplexNumber ch3 = new ComplexNumber(5, 6);
+
+        System.out.println(ch1);
+
+        ch1.add(ch2);
+        System.out.println(ch1);
+
+        ch1.subtract(ch3);
+        System.out.println(ch1);
+
+        ch1.multiply(ch2);
+        System.out.println(ch1);
+
+        ch1.divide(ch3);
+        System.out.println(ch1);
+        */
+
+        ComplexNumber first = new ComplexNumber(0, 0);
+        ComplexNumber second = new ComplexNumber(0, 0);
+
+        while (true) {
+            System.out.println("Hello Men!");
+
+            first = parseComplexNumber();
+            String op = parseOperator();
+            second = parseComplexNumber();
+
+            switch (op) {
+                case "+":
+                    first.add(second);
+                    break;
+                    case "-":
+                        first.subtract(second);
+                        break;
+                        case "*":
+                            first.multiply(second);
+                            break;
+                            case "/":
+                                first.divide(second);
+                                break;
+                                default:
+                                    continue;
+            }
+
+            System.out.println("Result: " + first);
+        }
+    }
+
+    private static ComplexNumber parseComplexNumber() {
+        Scanner in = new Scanner(System.in);
+        System.out.print("Enter the real and imaginary parts of a complex number: ");
+        float real = in.nextFloat();
+        float imaginary = in.nextFloat();
+        return new ComplexNumber(real, imaginary);
+    }
+
+    private static String parseOperator() {
+        Scanner in = new Scanner(System.in);
+        System.out.print("Enter the operator: ");
+        String operator = in.nextLine();
+        return operator;
+    }
+}

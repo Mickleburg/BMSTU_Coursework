@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>FTP Client via WebSocket</title>
+</head>
+
+<body>
+    <h1>Client</h1>
+
+    <input type="text" id="commandInput"
+        placeholder="Введите команду (mkdir dir, rm file, ls, cd dir, rmdir dir, rmdirrecur dir)" style="width: 520px;">
+    <button onclick="sendCommand()">Отправить</button>
+    <br><br>
+
+    <div id="output"
+        style="border: 1px solid #ccc; padding: 10px; height: 400px; overflow: auto; white-space: pre-wrap;"></div>
+
+    <script>
+        const output = document.getElementById('output');
+        const input = document.getElementById('commandInput');
+
+        // ВАЖНО: если сервер на другом хосте/порту — поменяй URL
+        const ws = new WebSocket('ws://localhost:8080/ws');
+
+        function appendToOutput(text) {
+            output.textContent += text + '\n';
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function normalizeCommand(cmd) {
+            const parts = cmd.trim().split(/\s+/).filter(Boolean);
+            if (parts.length === 0) return '';
+
+            if (parts[0] === 'rm') {
+                const arg = parts[1] ?? '';
+                return ['rmfile', arg].filter(Boolean).join(' ');
+            }
+
+            if (parts[0] === 'rmdir' && (parts[1] === '-r' || parts[1] === '-R' || parts[1] === '--recur')) {
+                const arg = parts[2] ?? '';
+                return ['rmdirrecur', arg].filter(Boolean).join(' ');
+            }
+
+            return cmd.trim();
+        }
+
+        ws.onopen = () => appendToOutput('WebSocket подключен');
+        ws.onmessage = (event) => appendToOutput('Сервер: ' + event.data);
+        ws.onclose = () => appendToOutput('WebSocket отключен');
+        ws.onerror = () => appendToOutput('WebSocket ошибка');
+
+        function sendCommand() {
+            const raw = input.value.trim();
+            if (!raw) return;
+
+            const cmd = normalizeCommand(raw);
+
+            ws.send(cmd);
+            appendToOutput('> ' + raw + (cmd !== raw ? `   (=> ${cmd})` : ''));
+            input.value = '';
+        }
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendCommand();
+        });
+    </script>
+</body>
+
+</html>

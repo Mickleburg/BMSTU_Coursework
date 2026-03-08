@@ -1,0 +1,30 @@
+(define (ref data ind . el)
+  (define (solve xs i x)
+    (if (= i 0)
+        (cons x xs)
+        (cons (car xs) (solve (cdr xs) (- i 1) x))))
+  (and
+   (>= ind 0)
+   (cond
+     ((pair? data)
+      (if (null? el)
+          (and (< ind (length data)) (list-ref data ind))
+          (and (<= ind (length data)) (solve data ind (car el)))))
+     ((vector? data)
+      (if (null? el)
+          (and (< ind (vector-length data)) (vector-ref data ind))
+          (let ((L (vector->list data)))
+            (and
+             (<= ind (length L))
+             (let ((ans (list->vector (solve L ind (car el)))))
+               ans)))))
+     ((string? data)
+      (if (null? el)
+          (and (< ind (string-length data)) (string-ref data ind))
+          (and
+           (char? (car el))
+           (let ((L (string->list data)))
+             (and
+              (<= ind (length L))
+              (let ((ans (list->string (solve L ind (car el)))))
+                ans)))))))))

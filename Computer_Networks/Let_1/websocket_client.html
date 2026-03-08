@@ -1,0 +1,42 @@
+<html>
+<head>
+<title>Летучка</title>
+<link rel="stylesheet" href="style.css" type="text/css"/>
+<meta charset="utf8">
+<script>
+
+let socket = new WebSocket("ws://185.102.139.168:1566");
+
+socket.onopen = function(e) {
+  //alert("[open] Соединение установлено");
+  //alert("Отправляем данные на сервер");
+  socket.send("Greetings to Danila Palych from Daniil Shalimov");
+};
+
+socket.onmessage = function(event) {
+  //alert(`[message] Данные получены с сервера: ${event.data}`);
+  document.getElementById("id").innerHTML = event.data; 
+
+
+};
+
+socket.onclose = function(event) {
+  if (event.wasClean) {
+    //alert(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
+  } else {
+    // например, сервер убил процесс или сеть недоступна
+    // обычно в этом случае event.code 1006
+    //alert('[close] Соединение прервано');
+  }
+};
+
+socket.onerror = function(error) {
+  alert(`[error] ${error.message}`);
+};
+
+</script>
+</head>
+<body>
+<div id="id">data</div>
+</body>
+</html>

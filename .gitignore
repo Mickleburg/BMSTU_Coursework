@@ -1,0 +1,92 @@
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+*.class
+*.jar
+*.war
+*.ear
+*.map
+*.mem
+*.ilk
+*.pdb
+
+# Виртуальные окружения Python
+venv/
+.env/
+.venv/
+ENV/
+env/
+
+# Кэш Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Артефакты сборки Go (если используются)
+*.exe
+*.test
+*.out
+
+# Директории сборки Java / IDE
+out/
+target/
+build/
+*.iml
+.idea/
+.classpath
+.project
+.settings/
+bin/
+
+# Логи и временные файлы
+*.log
+*.lck
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Директории с результатами лабораторных (если не нужны)
+lab*/__pycache__/
+lab*/venv/
+
+# Файлы, сгенерированные пользователем (например, отчёты)
+*.pdf
+*.docx
+*.jpg
+*.jpeg
+*.png
+# (если картинки — это результаты работы, их можно оставить, но обычно лучше хранить отдельно)
+
+# Файлы конфигурации, содержащие секреты
+.env
+*.key
+*.pem
+
+# Игнорировать бинарные файлы в Assembly (если они не исходники)
+Assembly/**/*.exe
+Assembly/**/*.obj
+Assembly/**/*.map
+Assembly/**/*.com
+Assembly/**/*.lib
+# но исходники .asm оставить
+
+# Для Computer_Networks – бинарники Go
+Computer_Networks/**/main
+Computer_Networks/**/server
+Computer_Networks/**/client
+Computer_Networks/**/*.exe
+
+# Исключение для папки TASM внутри Assembly - не игнорировать ничего в ней
+!Assembly/TASM/
+!Assembly/TASM/**

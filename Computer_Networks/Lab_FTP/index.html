@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>FTP Client via WebSocket</title>
+</head>
+
+<body>
+    <h1>Client</h1>
+
+    <input type="text" id="commandInput"
+        placeholder="Введите команду (mkdir dir, rm file, ls, cd dir, rmdir dir, rmdir -r dir)"
+        style="width: 400px;">
+    <button onclick="sendCommand()">Отправить</button>
+    <br><br>
+
+    <div id="output"
+        style="border: 1px solid #ccc; padding: 10px; height: 400px; overflow: auto; white-space: pre-wrap;"></div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8080/ws');
+        const output = document.getElementById('output');
+        const input = document.getElementById('commandInput');
+
+        ws.onopen = function () {
+            appendToOutput('WebSocket подключен');
+        };
+
+        ws.onmessage = function (event) {
+            appendToOutput('Сервер: ' + event.data);
+        };
+
+        ws.onclose = function () {
+            appendToOutput('WebSocket отключен');
+        };
+
+        function appendToOutput(text) {
+            output.textContent += text + '\n';
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function sendCommand() {
+            const cmd = input.value.trim();
+            if (cmd) {
+                ws.send(cmd);
+                appendToOutput('> ' + cmd);
+                input.value = '';
+            }
+        }
+
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendCommand();
+            }
+        });
+    </script>
+</body>
+
+</html>

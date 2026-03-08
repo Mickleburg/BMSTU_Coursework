@@ -1,0 +1,23 @@
+#!/bin/bash
+
+[ $# -ne 2 ] && echo "Incorrect number of arguments" && exit 0
+
+FILE_OUT="out_1.txt"
+FILE_ERROR="error_1.txt"
+
+prog_path="$1"
+prog_interval="$2"
+
+$prog_path > "$FILE_OUT" 2> "$FILE_ERROR" &
+
+sleep $(( "$prog_interval" * 60))
+
+while true; do
+    if ! pgrep -f "$prog_path"; then
+        echo "Зпустили программу"
+	    $prog_path >> "$FILE_OUT" 2>> "$FILE_ERROR" &
+	else
+	    echo "Программа ещё работает"
+	fi
+	sleep $(( "$prog_interval" * 60))
+done
