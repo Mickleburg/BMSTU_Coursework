@@ -1,0 +1,12 @@
+.topics__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding: 20px 25px;
+  background: linear-gradient(145deg, #ffffff, #f8fdff);
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 25px rgba(173, 216, 230, 0.2),
+    inset 0 0 0 1px rgba(180, 220, 240, 0.4);
+}

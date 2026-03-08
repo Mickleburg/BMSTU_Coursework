@@ -1,0 +1,9 @@
+.button_type_primary {
+  background: linear-gradient(to bottom, #a8d8ff, #7ab3e6);
+  color: #2c3e50;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.button_type_primary:hover {
+  background: linear-gradient(to bottom, #bae6ff, #8ac3f0);
+}

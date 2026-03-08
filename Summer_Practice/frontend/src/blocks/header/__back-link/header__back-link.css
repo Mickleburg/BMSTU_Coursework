@@ -1,0 +1,29 @@
+.header__back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #fffaf0;
+  color: #d4a56a;
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 50px;
+  box-shadow: 
+    0 2px 6px rgba(212, 165, 106, 0.15),
+    inset 0 0 0 1px rgba(212, 165, 106, 0.2);
+  transition: all 0.3s ease;
+}
+
+.header__back-link:hover {
+  background: #fff2d9;
+  box-shadow: 
+    0 4px 10px rgba(212, 165, 106, 0.2),
+    inset 0 0 0 1px rgba(212, 165, 106, 0.3);
+  transform: translateY(-2px);
+}
+
+.header__back-link::before {
+  content: "←";
+  font-weight: 700;
+  font-size: 1.2rem;
+}

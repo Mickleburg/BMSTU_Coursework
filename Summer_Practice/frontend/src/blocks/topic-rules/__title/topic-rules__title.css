@@ -1,0 +1,19 @@
+.topic-rules__title {
+  color: #3a6a8c;
+  font-size: 1.8rem;
+  margin: 0 0 25px;
+  position: relative;
+  padding-bottom: 15px;
+  z-index: 1;
+}
+
+.topic-rules__title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(to right, #a8d8ff, #ffd8a8, #a8d8ff);
+  border-radius: 2px;
+}

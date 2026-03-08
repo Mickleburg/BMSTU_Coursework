@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Тема форума</title>
+
+        <link rel="stylesheet" href="/styles.css">
+
+    </head>
+
+    <body class="page">
+        <header class="header">
+            <div class="header__container">
+                <a href="index.html" class="header__back-link">На главную страницу</a>
+
+                <!-- Динамически изменяемые данные -->
+                <h1 class="header__title" id="topicTitle">Название темы</h1>
+            </div>
+        </header>
+
+        <main class="main">
+            <section class="topic-rules">
+                <h2 class="topic-rules__title">Правила обсуждения</h2>
+                <div class="topic-rules__content" id="topicRules">
+
+                    <!-- Правила будут загружены с сервера -->
+
+                </div>
+            </section>
+
+            <section class="messages">
+                <h2 class="messages__title">Сообщения</h2>
+                <div class="messages__list" id="messagesList">
+
+                    <!-- Сообщения загружаются динамически -->
+                     
+                </div>
+            </section>
+
+            <section class="new-message">
+                <h2 class="new-message__title">Добавить сообщение</h2>
+                <form class="form" id="messageForm">
+                    <div class="form__group">
+                        <label class="form__label">Ваше сообщение</label>
+                        <textarea class="form__textarea" name="text" rows="4" required></textarea>
+                    </div>
+
+                    <input type="hidden" name="parentId" id="parentId" value="">
+
+                    <div class="form__group" id="replyInfo" style="display:none;">
+                        <p>Ответ на сообщение: <span id="replyText"></span></p>
+
+                        <button type="button" class="button button_type_small" id="cancelReplyBtn">Отменить</button>
+                    </div>
+
+                    <button type="submit" class="button button_type_small">Отправить</button>
+                </form>    
+            </section>
+        </main>
+
+        <script src="/topic.js"></script>
+    </body>
+</html>

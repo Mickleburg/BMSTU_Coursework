@@ -1,0 +1,9 @@
+.topic-card__description {
+  color: #4a7a9c;
+  padding: 20px 25px;
+  margin: 0;
+  flex-grow: 1;
+  line-height: 1.6;
+  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.5);
+}

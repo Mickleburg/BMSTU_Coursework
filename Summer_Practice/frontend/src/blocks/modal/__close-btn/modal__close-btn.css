@@ -1,0 +1,44 @@
+.modal__close-btn {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  width: 45px;
+  height: 45px;
+  border: none;
+  background: #ffeac4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(212, 165, 106, 0.25);
+  transition: all 0.3s ease;
+}
+
+.modal__close-btn:hover {
+  transform: rotate(90deg) scale(1.1);
+  background: #ffd8a8;
+  box-shadow: 
+    0 6px 15px rgba(212, 165, 106, 0.25),
+    inset 0 0 0 1px rgba(212, 165, 106, 0.35);
+}
+
+.modal__close-btn::before,
+.modal__close-btn::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 3px;
+  background: #d4a56a;
+  border-radius: 2px;
+}
+
+.modal__close-btn::before {
+  transform: rotate(45deg);
+}
+
+.modal__close-btn::after {
+  transform: rotate(-45deg);
+}

@@ -1,0 +1,20 @@
+.new-message__title {
+  color: #2c6a93;
+  font-size: 1.8rem;
+  margin: 0 0 30px;
+  text-align: center;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.new-message__title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 4px;
+  background: linear-gradient(to right, #ffd8a8, #a8d8ff);
+  border-radius: 2px;
+}

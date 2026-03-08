@@ -1,0 +1,19 @@
+.topics__title {
+  color: #2c6a93;
+  font-size: 2rem;
+  margin: 0;
+  padding: 0 20px;
+  position: relative;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.topics__title::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 20px;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(to right, #a8d8ff, #ffd8a8);
+  border-radius: 2px;
+}

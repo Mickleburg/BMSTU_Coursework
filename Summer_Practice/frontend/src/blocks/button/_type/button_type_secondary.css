@@ -1,0 +1,8 @@
+.button_type_secondary {
+  background: linear-gradient(to bottom, #fffaf0, #ffeac4);
+  color: #d4a56a;
+}
+
+.button_type_secondary:hover {
+  background: linear-gradient(to bottom, #fff2d9, #ffe0a8);
+}

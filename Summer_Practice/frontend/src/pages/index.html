@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Анонимный web-форум</title> <!-- Заголовок страницы -->
+
+        <link rel="stylesheet" href="/styles.css">
+        <!-- Я так понимаю, все стили должны собираться сюда и отсюда браться -->
+    </head>
+
+    <body class="page">
+        <header class="header">
+            <div class="header__container">
+                <h1 class="header__title">Анонимный форум</h1> <!-- Заголовок -->
+            </div>
+        </header>
+
+        <main class="main">
+            <section class="welcome">
+                <div class="welcome__container">
+                    <h2 class="welcome__title"> Добро пожаловать!</h2>
+                    <p class="welcome__text">Обсуждайте темы анонимно и без регистрации!!!</p>
+                </div>
+            </section>
+
+            <section class="topics">
+                <div class="topics__header">
+                    <h2 class="topics__title">Список тем</h2>
+
+                    <!-- Кнопка с новой темой -->
+                    <button class="button button_type_primary topics__create-btn" id="createTopicBtn">
+                        Создать тему
+                    </button>
+
+                </div>
+
+                <div class="topics__list" id="topicsList">
+                    
+                    <!-- Динамически загружаемые темы должны быть здесь -->
+                     
+                </div>
+            </section>
+        </main>
+
+        <!-- Окно для создания темы -->
+         <div class="modal modal_hidden" id="createTopicModal">
+            <div class="modal__content">
+                <h2 class="modal__title"> Создание новой темы</h2>
+                <form class="form" id="topicForm">
+                    <div class="form__group">
+                        <label class="form__label">Название темы</label>
+
+                        <input type="text" class="form__input" name="title" required>
+                    </div>
+
+                    <div class="form__group">
+                        <label class="form__label">Правила</label>
+
+                        <textarea class="form__textarea" name="rules" rows="4"></textarea>
+                    </div>
+
+                    <div class="form__actions">
+                        <button type="button" class="button button_type_secondary modal__close-btn">Отмена</button>
+                        <button type="submit" class="button button_type_primary">Создать</button>
+                    </div>
+                </form>
+            </div>
+         </div>
+
+        <script src="/index.js"></script>
+    </body>
+</html>

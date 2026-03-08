@@ -1,0 +1,37 @@
+.topics__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 30px;
+  padding: 20px 0;
+}
+
+.topics__list .loading, 
+.topics__list .empty, 
+.topics__list .error {
+    padding: 20px;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #3a6a8c;
+    grid-column: 1 / -1;
+}
+
+.topics__list .loading::after {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(58, 106, 140, 0.3);
+    border-radius: 50%;
+    border-top-color: #3a6a8c;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.topics__list .error {
+    color: #e74c3c;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

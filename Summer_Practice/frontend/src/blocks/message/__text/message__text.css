@@ -1,0 +1,19 @@
+.message__text {
+  color: #3a6a8c;
+  font-size: 1.15rem;
+  line-height: 1.7;
+  margin: 0 0 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.message__text::before {
+  content: """;
+  position: absolute;
+  top: -15px;
+  left: -20px;
+  font-size: 4rem;
+  color: rgba(168, 216, 255, 0.15);
+  font-family: Georgia, serif;
+  z-index: -1;
+}

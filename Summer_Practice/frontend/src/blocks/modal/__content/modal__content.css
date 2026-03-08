@@ -1,0 +1,17 @@
+.modal__content {
+  background: linear-gradient(145deg, #ffffff, #f8fdff);
+  border-radius: 25px;
+  box-shadow: 
+    0 25px 60px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(180, 220, 240, 0.4);
+  width: 90%;
+  max-width: 600px;
+  padding: 40px;
+  position: relative;
+  transform: translateY(30px);
+  transition: transform 0.4s ease;
+}
+
+.modal_active .modal__content {
+  transform: translateY(0);
+}

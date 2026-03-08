@@ -1,0 +1,8 @@
+.form {
+  background: linear-gradient(145deg, #ffffff, #f8fdff);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 
+    0 10px 25px rgba(173, 216, 230, 0.2),
+    inset 0 0 0 1px rgba(180, 220, 240, 0.4);
+}

@@ -1,0 +1,25 @@
+.welcome__container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px;
+  background: linear-gradient(145deg, #ffffff, #f8fdff);
+  border-radius: 25px;
+  box-shadow: 
+    0 10px 30px rgba(173, 216, 230, 0.2),
+    inset 0 0 0 1px rgba(124, 181, 236, 0.15);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome__container::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 60%);
+  z-index: 0;
+  pointer-events: none;
+}

@@ -1,0 +1,23 @@
+.topic-rules {
+  background: linear-gradient(145deg, #ffffff, #f8fdff);
+  border-radius: 20px;
+  padding: 30px;
+  margin: 40px auto;
+  max-width: 1000px;
+  box-shadow: 
+    0 12px 30px rgba(173, 216, 230, 0.25),
+    inset 0 0 0 1px rgba(180, 220, 240, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.topic-rules::before {
+  content: "📜";
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  font-size: 8rem;
+  opacity: 0.05;
+  z-index: 0;
+  transform: rotate(15deg);
+}
