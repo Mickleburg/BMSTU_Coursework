@@ -1,3 +1,5 @@
-glfw==2.10.0
 PyOpenGL==3.1.10
 PyOpenGL-accelerate==3.1.10
+glfw==2.10.0
+pygame>=2.5.0
+numpy>=1.26.0
