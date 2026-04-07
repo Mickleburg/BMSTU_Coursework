@@ -122,13 +122,13 @@ def display(window):
     glRotatef(30.0, 1.0, 0.0, 0.0)
     glRotatef(-45.0, 0.0, 1.0, 0.0)
 
-    # маленький икосаэдр для примера
+    # маленький икосаэдр
     glPushMatrix()
     glTranslatef(-1.5, 1.0, -1.5)
     icosahedron(0.6)
     glPopMatrix()
 
-    # основной объект
+    # основной
     glPushMatrix()
     glScalef(scale, scale, scale)
     glRotatef(alpha, 1.0, 0.0, 0.0)

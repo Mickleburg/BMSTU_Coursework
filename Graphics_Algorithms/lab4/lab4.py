@@ -17,9 +17,11 @@ FILL_COLOR = (105, 150, 245, 255)
 OUTLINE_COLOR = (25, 50, 110, 255)
 PREVIEW_COLOR = (220, 95, 75, 255)
 
+# одна точка
 Point = tuple[int, int]
 
 
+# одно ребро
 @dataclass
 class EdgeRecord:
     y_min: int
@@ -28,6 +30,7 @@ class EdgeRecord:
     inv_slope: float
 
 
+# хранит буферы, координаты курсора и нужно ли перерисовывать кадр
 @dataclass
 class AppState:
     framebuffer_width: int = WINDOW_WIDTH
@@ -47,10 +50,12 @@ def init_gl():
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
 
 
+# создание буфера
 def make_buffer(width: int, height: int, color: tuple[int, int, int, int]) -> bytearray:
     return bytearray(bytes(color) * (width * height))
 
 
+# если размер окна меняется - пересоздаем буфер
 def resize_buffers(state: AppState, width: int, height: int):
     state.framebuffer_width = max(1, width)
     state.framebuffer_height = max(1, height)
@@ -59,17 +64,20 @@ def resize_buffers(state: AppState, width: int, height: int):
     state.needs_redraw = True
 
 
+# заполняет переданный буфер одним цветом(очистка)
 def clear_buffer(state: AppState, buffer_name: str, color: tuple[int, int, int, int]):
     buf = getattr(state, buffer_name)
     buf[:] = bytes(color) * (state.framebuffer_width * state.framebuffer_height)
 
 
+# координаты в индекс в буфере
 def pixel_index(state: AppState, x: int, y: int) -> int | None:
     if x < 0 or x >= state.framebuffer_width or y < 0 or y >= state.framebuffer_height:
         return None
     return (y * state.framebuffer_width + x) * 4
 
 
+# пишем пиксель в буфер
 def put_pixel_raw(state: AppState, x: int, y: int, color: tuple[int, int, int, int]):
     idx = pixel_index(state, x, y)
     if idx is None:
@@ -77,6 +85,7 @@ def put_pixel_raw(state: AppState, x: int, y: int, color: tuple[int, int, int, i
     state.raw_buffer[idx:idx + 4] = bytes(color)
 
 
+# заполняем строку пикселями
 def fill_horizontal_span_raw(
     state: AppState,
     y: int,
@@ -95,7 +104,8 @@ def fill_horizontal_span_raw(
     row_start = (y * state.framebuffer_width + x_start) * 4
     state.raw_buffer[row_start:row_start + (x_end - x_start + 1) * 4] = bytes(color) * (x_end - x_start + 1)
 
-
+# Алгоритмы рисования
+# рисуем линию по алгоритмы Брезенхема
 def draw_line_bresenham(
     state: AppState,
     start: Point,
@@ -126,6 +136,7 @@ def draw_line_bresenham(
             y0 += sy
 
 
+# подготовливаем список ребер для заливки
 def build_edge_list(vertices: list[Point]) -> list[EdgeRecord]:
     edges: list[EdgeRecord] = []
     total = len(vertices)
@@ -155,6 +166,9 @@ def build_edge_list(vertices: list[Point]) -> list[EdgeRecord]:
     return edges
 
 
+# функция по заливке - список ребер+флаг
+# нам надо идти по строкам и на каждой строке находить пересечения с ребром
+# флаг показывает мы снаружи/внутри, +закрашиваем промежутки между парными пересечениями
 def fill_polygon_a5(
     state: AppState,
     vertices: list[Point],
@@ -196,6 +210,7 @@ def fill_polygon_a5(
             edge.x += edge.inv_slope
 
 
+# рисуем контур многоульника(сначала залили, потом контур)
 def draw_polygon_edges(
     state: AppState,
     vertices: list[Point],
@@ -212,6 +227,8 @@ def draw_polygon_edges(
         draw_line_bresenham(state, vertices[-1], vertices[0], color)
 
 
+# постфильтрация - для каждого пикселя пересчитываем значение
+# как взвешенное сроеднее соседей
 def apply_postfilter_b2(state: AppState):
     w = state.framebuffer_width
     h = state.framebuffer_height
@@ -240,6 +257,7 @@ def apply_postfilter_b2(state: AppState):
     state.display_buffer[:] = out.tobytes()
 
 
+# перерисовка сцены
 def redraw_scene(state: AppState):
     clear_buffer(state, "raw_buffer", BACKGROUND_COLOR)
 
@@ -269,6 +287,7 @@ def redraw_scene(state: AppState):
     state.needs_redraw = False
 
 
+# тут отображаем наш буфер в окне OpenGL
 def render_buffer(state: AppState):
     glViewport(0, 0, state.framebuffer_width, state.framebuffer_height)
     glClear(GL_COLOR_BUFFER_BIT)
@@ -283,6 +302,7 @@ def render_buffer(state: AppState):
     )
 
 
+# пересчет координаит мыши
 def window_to_framebuffer_coords(window, state: AppState, xpos: float, ypos: float) -> Point:
     window_width, window_height = glfw.get_window_size(window)
     window_width = max(window_width, 1)
@@ -296,6 +316,7 @@ def window_to_framebuffer_coords(window, state: AppState, xpos: float, ypos: flo
     return x, y
 
 
+# сбрасывает сцену
 def clear_polygon_state(state: AppState):
     state.polygon_vertices.clear()
     state.polygon_closed = False
@@ -303,6 +324,7 @@ def clear_polygon_state(state: AppState):
     state.needs_redraw = True
 
 
+# дорисовывает многоугольник
 def close_polygon(state: AppState):
     if len(state.polygon_vertices) >= 3 and not state.polygon_closed:
         state.polygon_closed = True
