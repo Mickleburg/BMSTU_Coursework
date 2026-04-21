@@ -14,7 +14,7 @@ WINDOW_HEIGHT = 700
 WINDOW_TITLE = "ЛР5 – Отсечение отрезка произвольным многоугольником"
 
 BACKGROUND_COLOR = (245, 247, 252, 255)
-FILL_COLOR = (105, 150, 245, 255)          # заливка многоугольника
+FILL_COLOR = (105, 150, 245, 255)           # заливка многоугольника
 OUTLINE_COLOR = (25, 50, 110, 255)          # контур многоугольника
 PREVIEW_COLOR = (220, 95, 75, 255)          # предпросмотр отрезка / незамкнутого контура
 CLIP_SEGMENT_COLOR = (50, 205, 50, 255)     # отсечённые отрезки (зелёный)
@@ -58,6 +58,7 @@ class AppState:
     needs_redraw: bool = True
 
 
+# инициализация параметров opengl
 def init_gl():
     glClearColor(*(c / 255.0 for c in BACKGROUND_COLOR[:3]), 1.0)
     glDisable(GL_DEPTH_TEST)
@@ -65,10 +66,12 @@ def init_gl():
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
 
 
+# создание буфера заданного размера и цвета
 def make_buffer(width: int, height: int, color: Tuple[int, int, int, int]) -> bytearray:
     return bytearray(bytes(color) * (width * height))
 
 
+# изменение размеров буферов при изменении окна
 def resize_buffers(state: AppState, width: int, height: int):
     state.framebuffer_width = max(1, width)
     state.framebuffer_height = max(1, height)
@@ -77,17 +80,20 @@ def resize_buffers(state: AppState, width: int, height: int):
     state.needs_redraw = True
 
 
+# очистка указанного буфера заданным цветом
 def clear_buffer(state: AppState, buffer_name: str, color: Tuple[int, int, int, int]):
     buf = getattr(state, buffer_name)
     buf[:] = bytes(color) * (state.framebuffer_width * state.framebuffer_height)
 
 
+# преобразование координат пикселя в индекс в сыром буфере
 def pixel_index(state: AppState, x: int, y: int) -> int | None:
     if x < 0 or x >= state.framebuffer_width or y < 0 or y >= state.framebuffer_height:
         return None
     return (y * state.framebuffer_width + x) * 4
 
 
+# запись одного пикселя в сырой буфер
 def put_pixel_raw(state: AppState, x: int, y: int, color: Tuple[int, int, int, int]):
     idx = pixel_index(state, x, y)
     if idx is None:
@@ -95,6 +101,7 @@ def put_pixel_raw(state: AppState, x: int, y: int, color: Tuple[int, int, int, i
     state.raw_buffer[idx:idx + 4] = bytes(color)
 
 
+# заполнение горизонтального интервала в сыром буфере
 def fill_horizontal_span_raw(state: AppState, y: int, x_start: int, x_end: int, color: Tuple[int, int, int, int]):
     if y < 0 or y >= state.framebuffer_height:
         return
@@ -106,6 +113,7 @@ def fill_horizontal_span_raw(state: AppState, y: int, x_start: int, x_end: int, 
     state.raw_buffer[row_start:row_start + (x_end - x_start + 1) * 4] = bytes(color) * (x_end - x_start + 1)
 
 
+# рисование линии алгоритмом брезенхэма
 def draw_line_bresenham(state: AppState, start: Point, end: Point, color: Tuple[int, int, int, int]):
     x0, y0 = start
     x1, y1 = end
@@ -127,7 +135,7 @@ def draw_line_bresenham(state: AppState, start: Point, end: Point, color: Tuple[
             y0 += sy
 
 
-# ------------------ Алгоритм заливки A5 (из lab4) ------------------
+# построение списка рёбер для алгоритма заливки
 def build_edge_list(vertices: List[Point]) -> List[EdgeRecord]:
     edges: List[EdgeRecord] = []
     total = len(vertices)
@@ -144,6 +152,7 @@ def build_edge_list(vertices: List[Point]) -> List[EdgeRecord]:
     return edges
 
 
+# заливка многоугольника
 def fill_polygon_a5(state: AppState, vertices: List[Point], color: Tuple[int, int, int, int]):
     if len(vertices) < 3:
         return
@@ -173,6 +182,7 @@ def fill_polygon_a5(state: AppState, vertices: List[Point], color: Tuple[int, in
             e.x += e.inv_slope
 
 
+# отрисовка контура многоугольника
 def draw_polygon_edges(state: AppState, vertices: List[Point], color: Tuple[int, int, int, int], closed: bool):
     if len(vertices) < 2:
         return
@@ -182,6 +192,7 @@ def draw_polygon_edges(state: AppState, vertices: List[Point], color: Tuple[int,
         draw_line_bresenham(state, vertices[-1], vertices[0], color)
 
 
+# постфильтрация изображения взвешенным усреднением 3x3
 def apply_postfilter_b2(state: AppState):
     w, h = state.framebuffer_width, state.framebuffer_height
     src = np.frombuffer(state.raw_buffer, dtype=np.uint8).reshape((h, w, 4))
@@ -198,16 +209,15 @@ def apply_postfilter_b2(state: AppState):
     state.display_buffer[:] = out.tobytes()
 
 
-# ------------------ Алгоритм отсечения отрезка ------------------
+# проверка принадлежности точки многоугольнику
 def point_in_polygon(x: float, y: float, poly: List[Point]) -> bool:
-    """Тест принадлежности точки многоугольнику (правило чётного-нечётного)."""
     inside = False
     n = len(poly)
     px, py = x, y
     for i in range(n):
         x1, y1 = poly[i]
         x2, y2 = poly[(i + 1) % n]
-        # Проверяем, пересекает ли луч (px,py) -> (+inf,py) ребро
+
         if ((y1 > py) != (y2 > py)):
             x_inter = (x2 - x1) * (py - y1) / (y2 - y1) + x1
             if px < x_inter:
@@ -215,8 +225,8 @@ def point_in_polygon(x: float, y: float, poly: List[Point]) -> bool:
     return inside
 
 
+# нахождение точки пересечения двух отрезков (параметрический метод)
 def line_intersection(p1: Point, p2: Point, q1: Point, q2: Point) -> Tuple[float, float] | None:
-    """Возвращает точку пересечения отрезков (x,y) или None."""
     x1, y1 = p1
     x2, y2 = p2
     x3, y3 = q1
@@ -236,11 +246,8 @@ def line_intersection(p1: Point, p2: Point, q1: Point, q2: Point) -> Tuple[float
     return None
 
 
+# отсечение отрезка произвольным многоугольником
 def clip_segment_by_polygon(poly: List[Point], p1: Point, p2: Point) -> List[Tuple[Point, Point]]:
-    """
-    Отсекает отрезок (p1,p2) произвольным многоугольником poly.
-    Возвращает список видимых фрагментов (каждый — пара точек).
-    """
     if len(poly) < 3:
         return []
 
@@ -286,6 +293,7 @@ def clip_segment_by_polygon(poly: List[Point], p1: Point, p2: Point) -> List[Tup
     return fragments
 
 
+# перерисовка всей сцены
 def redraw_scene(state: AppState):
     clear_buffer(state, "raw_buffer", BACKGROUND_COLOR)
 
@@ -314,6 +322,7 @@ def redraw_scene(state: AppState):
     state.needs_redraw = False
 
 
+# вывод содержимого буфера в окно opengl
 def render_buffer(state: AppState):
     glViewport(0, 0, state.framebuffer_width, state.framebuffer_height)
     glClear(GL_COLOR_BUFFER_BIT)
@@ -322,6 +331,7 @@ def render_buffer(state: AppState):
     glDrawPixels(state.framebuffer_width, state.framebuffer_height, GL_RGBA, GL_UNSIGNED_BYTE, state.display_buffer)
 
 
+# преобразование координат курсора из оконных в координаты буфера кадра
 def window_to_framebuffer_coords(window, state: AppState, xpos: float, ypos: float) -> Point:
     win_w, win_h = glfw.get_window_size(window)
     win_w = max(win_w, 1)
@@ -333,8 +343,8 @@ def window_to_framebuffer_coords(window, state: AppState, xpos: float, ypos: flo
     return x, y
 
 
+# сброс состояния приложения к начальному
 def reset_to_initial(state: AppState):
-    """Полный сброс состояния."""
     state.mode = AppMode.POLYGON
     state.polygon_vertices.clear()
     state.polygon_closed = False
@@ -344,6 +354,7 @@ def reset_to_initial(state: AppState):
     state.needs_redraw = True
 
 
+# замыкание многоугольника и переход в режим отсечения
 def close_polygon(state: AppState):
     if len(state.polygon_vertices) >= 3 and not state.polygon_closed:
         state.polygon_closed = True
@@ -351,7 +362,7 @@ def close_polygon(state: AppState):
         state.needs_redraw = True
 
 
-# ------------------ Callbacks GLFW ------------------
+# обработчик перемещения курсора
 def cursor_position_callback(window, xpos, ypos):
     state: AppState = glfw.get_window_user_pointer(window)
     state.cursor_fb_pos = window_to_framebuffer_coords(window, state, xpos, ypos)
@@ -362,11 +373,13 @@ def cursor_position_callback(window, xpos, ypos):
         state.needs_redraw = True
 
 
+# обработчик изменения размера окна
 def framebuffer_size_callback(window, width, height):
     state: AppState = glfw.get_window_user_pointer(window)
     resize_buffers(state, width, height)
 
 
+# обработчик мыши
 def mouse_button_callback(window, button, action, mods):
     del mods
     state: AppState = glfw.get_window_user_pointer(window)
@@ -400,6 +413,7 @@ def mouse_button_callback(window, button, action, mods):
             close_polygon(state)
 
 
+# обработчик клавиатуры
 def key_callback(window, key, scancode, action, mods):
     del scancode, mods
     state: AppState = glfw.get_window_user_pointer(window)
