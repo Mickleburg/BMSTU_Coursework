@@ -9,9 +9,8 @@ WINDOW_WIDTH = 900
 WINDOW_HEIGHT = 800
 WINDOW_TITLE = "ЛР6 - Реалистичные изображения: A6 + Б2 + В2"
 
-# -----------------------------
+
 # Состояние сцены / управления
-# -----------------------------
 view_alpha = 25.0          # поворот всей сцены вокруг Ox
 view_beta = -35.0          # поворот всей сцены вокруг Oy
 camera_distance = 5.2      # отдаление камеры через model-view transform, без gluLookAt
@@ -36,9 +35,7 @@ spin_angle = 0.0
 checker_texture = None
 
 
-# -----------------------------
 # Геометрия икосаэдра
-# -----------------------------
 def get_icosahedron_geometry(size: float):
     """Возвращает вершины и грани икосаэдра размера size."""
     phi = (1.0 + math.sqrt(5.0)) / 2.0
@@ -107,9 +104,7 @@ def face_normal(vertices, face):
     return n
 
 
-# -----------------------------
 # Проекция и OpenGL-настройки
-# -----------------------------
 def set_perspective_projection(fov_deg, aspect, near, far):
     """Матрица перспективы вручную, без gluPerspective/gluLookAt."""
     f = 1.0 / math.tan(math.radians(fov_deg) / 2.0)
@@ -178,9 +173,7 @@ def create_checker_texture(size: int = 64):
     return tex_id
 
 
-# -----------------------------
 # A6: несколько источников света
-# -----------------------------
 def apply_lights():
     """Настройка трех источников света: ключевой, заполняющий и контровой."""
     lights = [
@@ -254,9 +247,7 @@ def draw_light_markers():
     glEnable(GL_LIGHTING)
 
 
-# -----------------------------
 # Материалы и текстуры
-# -----------------------------
 def set_surface_material(reference: bool = False):
     if reference:
         ambient = [0.18, 0.18, 0.18, 1.0]
@@ -287,9 +278,7 @@ def bind_surface_texture(enable: bool):
         glDisable(GL_TEXTURE_2D)
 
 
-# -----------------------------
 # Отрисовка
-# -----------------------------
 def draw_icosahedron(size: float, use_texture: bool = True, reference: bool = False):
     vertices, faces = get_icosahedron_geometry(size)
     set_surface_material(reference=reference)
@@ -389,9 +378,7 @@ def display(window):
     glfw.poll_events()
 
 
-# -----------------------------
 # Б2: анимация с упругим отражением
-# -----------------------------
 def update_animation(dt: float):
     global spin_angle
 
@@ -424,9 +411,7 @@ def reset_animation():
     spin_angle = 0.0
 
 
-# -----------------------------
-# Управление
-# -----------------------------
+
 def print_controls():
     print("\nУправление ЛР6")
     print("  Стрелки       - поворот сцены")
