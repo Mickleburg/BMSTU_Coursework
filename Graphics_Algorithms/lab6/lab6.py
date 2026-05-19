@@ -20,7 +20,7 @@ texture_enabled = True
 animation_enabled = True
 show_bounds = True
 
-# A6: несколько источников света
+# A6: несколько источников света. Источники можно отключать кнопками 1/2/3.
 light_enabled = [True, True, True]
 
 # Б2: движение тела с отражением от границ ограничивающего объема.
