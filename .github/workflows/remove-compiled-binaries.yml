@@ -1,4 +1,4 @@
-name: Remove compiled binaries
+name: Remove compiled ELF binaries
 
 on:
   workflow_dispatch:
@@ -12,51 +12,74 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Show compiled binaries
-        shell: bash
+      - name: Find and remove ELF binaries
+        shell: python
         run: |
-          echo "Compiled binaries found:"
-          git ls-files -z | while IFS= read -r -d '' f; do
-            [ -f "$f" ] || continue
+          import os
+          import subprocess
 
-            type="$(file -b "$f")"
+          files = subprocess.check_output(
+              ["git", "ls-files", "-z"]
+          ).decode().split("\0")
 
-            case "$type" in
-              ELF*|PE32*|Mach-O*)
-                echo "$f"
-                echo "    $type"
-                ;;
-            esac
-          done
+          removed = []
 
-      - name: Remove compiled binaries
-        shell: bash
+          for path in files:
+              if not path or not os.path.isfile(path):
+                  continue
+
+              with open(path, "rb") as f:
+                  magic = f.read(4)
+
+              if magic == b"\x7fELF":
+                  print(f"Removing ELF: {path}")
+                  subprocess.run(
+                      ["git", "rm", "--", path],
+                      check=True
+                  )
+                  removed.append(path)
+
+          print()
+          print(f"Total ELF files removed: {len(removed)}")
+
+      - name: Show changes
         run: |
-          git ls-files -z | while IFS= read -r -d '' f; do
-            [ -f "$f" ] || continue
+          git status --short
+          echo
+          echo "Remaining tracked ELF files:"
+          python - <<'PY'
+          import os
+          import subprocess
 
-            type="$(file -b "$f")"
+          files = subprocess.check_output(
+              ["git", "ls-files", "-z"]
+          ).decode().split("\0")
 
-            case "$type" in
-              ELF*|PE32*|Mach-O*)
-                echo "Removing: $f"
-                git rm -- "$f"
-                ;;
-            esac
-          done
+          found = 0
+
+          for path in files:
+              if not path or not os.path.isfile(path):
+                  continue
+
+              with open(path, "rb") as f:
+                  if f.read(4) == b"\x7fELF":
+                      print(path)
+                      found += 1
+
+          print(f"Remaining ELF files: {found}")
+          PY
 
       - name: Commit and push
-        shell: bash
         run: |
           if git diff --cached --quiet; then
-            echo "No compiled binaries found."
+            echo "No ELF binaries were removed."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git commit -m "Remove compiled binary files"
-          git push
+          git commit -m "Remove compiled ELF binaries"
+          git push origin HEAD:main
