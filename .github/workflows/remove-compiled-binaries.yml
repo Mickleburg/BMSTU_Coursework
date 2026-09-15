@@ -1,0 +1,62 @@
+name: Remove compiled binaries
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show compiled binaries
+        shell: bash
+        run: |
+          echo "Compiled binaries found:"
+          git ls-files -z | while IFS= read -r -d '' f; do
+            [ -f "$f" ] || continue
+
+            type="$(file -b "$f")"
+
+            case "$type" in
+              ELF*|PE32*|Mach-O*)
+                echo "$f"
+                echo "    $type"
+                ;;
+            esac
+          done
+
+      - name: Remove compiled binaries
+        shell: bash
+        run: |
+          git ls-files -z | while IFS= read -r -d '' f; do
+            [ -f "$f" ] || continue
+
+            type="$(file -b "$f")"
+
+            case "$type" in
+              ELF*|PE32*|Mach-O*)
+                echo "Removing: $f"
+                git rm -- "$f"
+                ;;
+            esac
+          done
+
+      - name: Commit and push
+        shell: bash
+        run: |
+          if git diff --cached --quiet; then
+            echo "No compiled binaries found."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git commit -m "Remove compiled binary files"
+          git push
