@@ -13,6 +13,7 @@
 *   **[Graphics_Algorithms](Graphics_Algorithms)** — лабораторные работы по алгоритмам компьютерной графики.
 *   **[Informatics_Basics_Scheme](Informatics_Basics_Scheme)** — основы информатики и программирования на языке Scheme.
 *   **[Operating_Systems](Operating_Systems)** - некоторые инструкции к лабам курса Операционные Системы
+*   **[Parallel_and_Distributed_Systems](Parallel_and_Distributed_Systems)** - лабораторные работы по курсу "Параллельные и распределённые системы".
 *   **[Programming_Languages_and_Methods_Java](Programming_Languages_and_Methods_Java)** —  работы по курсу "Языки и методы программирования" на Java.
 *   **[Summer_Practice](Summer_Practice)** — проект, выполненный в рамках летней практики после первого курса.
 
