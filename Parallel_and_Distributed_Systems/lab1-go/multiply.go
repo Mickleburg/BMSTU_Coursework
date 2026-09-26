@@ -6,7 +6,6 @@ import (
 	"sync"
 )
 
-// multiplyByRows visits C in row-major order using the standard O(n^3) algorithm.
 func multiplyByRows(a, b Matrix) Matrix {
 	ensureCompatible(a, b)
 	c := newMatrix(a.N)
@@ -17,7 +16,6 @@ func multiplyByRows(a, b Matrix) Matrix {
 	return c
 }
 
-// multiplyByColumns visits C in column-major order using the same standard algorithm.
 func multiplyByColumns(a, b Matrix) Matrix {
 	ensureCompatible(a, b)
 	c := newMatrix(a.N)
@@ -57,8 +55,6 @@ func splitRange(size, parts int) []interval {
 	return ranges
 }
 
-// chooseGrid finds a factorisation close to a square. It corresponds to a grid
-// of rectangular C blocks; every block is calculated by one goroutine.
 func chooseGrid(workers, n int) (rowBlocks, columnBlocks int, err error) {
 	if workers <= 0 {
 		return 0, 0, fmt.Errorf("worker count must be positive")
@@ -80,8 +76,6 @@ func chooseGrid(workers, n int) (rowBlocks, columnBlocks int, err error) {
 	return 0, 0, fmt.Errorf("cannot split %d workers into non-empty blocks for size %d", workers, n)
 }
 
-// multiplyParallel calculates non-overlapping rectangular blocks of C in parallel.
-// A WaitGroup prevents the caller from continuing until every worker is done.
 func multiplyParallel(a, b Matrix, workers int) (Matrix, error) {
 	ensureCompatible(a, b)
 	rowBlocks, columnBlocks, err := chooseGrid(workers, a.N)

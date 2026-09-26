@@ -2,8 +2,6 @@ package main
 
 import "math/rand"
 
-// Matrix is a square matrix stored by rows in one contiguous slice.
-// Its layout improves cache locality compared with a slice of small slices.
 type Matrix struct {
 	N    int
 	Data []int64
