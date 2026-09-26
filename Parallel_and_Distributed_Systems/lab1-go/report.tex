@@ -1,0 +1,684 @@
+\documentclass[a4paper,14pt]{extarticle}
+
+\usepackage{geometry}
+\geometry{a4paper,tmargin=2cm,bmargin=2cm,lmargin=3cm,rmargin=1cm}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,main=russian]{babel}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\graphicspath{{./images/}}
+\usepackage{setspace}
+\linespread{1.3}
+\usepackage{tempora}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{hyperref}
+\hypersetup{unicode=true,hidelinks}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{listings}
+
+\sloppy
+\clubpenalty=10000
+\widowpenalty=10000
+
+\lstdefinelanguage{Go}{
+  morekeywords={break,default,func,interface,select,case,defer,go,map,struct,
+    chan,else,goto,package,switch,const,fallthrough,if,range,type,continue,
+    for,import,return,var},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+}
+\lstset{
+  language=Go,
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  breakatwhitespace=true,
+  columns=fullflexible,
+  frame=single,
+  numbers=left,
+  numbersep=5pt,
+  xleftmargin=18pt,
+  framexleftmargin=18pt,
+  showstringspaces=false,
+  tabsize=2,
+  captionpos=t,
+  inputencoding=utf8,
+  keepspaces=true
+}
+\renewcommand{\lstlistingname}{Листинг}
+
+\begin{document}
+
+\begin{titlepage}
+\thispagestyle{empty}
+
+\vspace*{-60pt}
+
+\hspace*{-82pt}
+\begin{minipage}{0.3\textwidth}
+\centering
+\IfFileExists{images/emblem.png}{%
+  \includegraphics[width=0.9\textwidth]{emblem.png}%
+}{%
+  \IfFileExists{images/emblem.jpg}{%
+    \includegraphics[width=0.9\textwidth]{emblem.jpg}%
+  }{}%
+}
+\end{minipage}
+\begin{minipage}{0.67\textwidth}
+\small
+\textbf{
+\vspace*{-0.7ex}
+\centerline{Министерство науки и высшего образования Российской Федерации}
+\vspace*{-0.7ex}
+\centerline{Федеральное государственное бюджетное образовательное учреждение}
+\vspace*{-0.7ex}
+\centerline{высшего образования}
+\vspace*{-0.7ex}
+\centerline{<<Московский государственный технический университет}
+\vspace*{-0.7ex}
+\centerline{имени Н. Э. Баумана}
+\vspace*{-0.7ex}
+\centerline{(национальный исследовательский университет)>>}
+\vspace*{-0.7ex}
+\centerline{(МГТУ им. Н. Э. Баумана)}
+}
+\end{minipage}
+
+\vspace{-25pt}
+\hspace{-35pt}\rule{\textwidth}{2.3pt}
+
+\vspace*{-20.3pt}
+\hspace{-35pt}\rule{\textwidth}{0.4pt}
+
+\vspace{1.5ex}
+\hspace{-35pt}\noindent\small
+ФАКУЛЬТЕТ\hspace{80pt} <<Информатика и системы управления>>
+
+\vspace*{-16pt}
+\hspace{47pt}\rule{0.83\textwidth}{0.4pt}
+
+\vspace{0.5ex}
+\hspace{-35pt}\noindent\small
+КАФЕДРА\hspace{50pt} <<Теоретическая информатика и компьютерные технологии>>
+
+\vspace*{-16pt}
+\hspace{30pt}\rule{0.866\textwidth}{0.4pt}
+
+\vspace{11em}
+
+\begin{center}
+\Large \textbf{Лабораторная работа №1} \\
+\large \textbf{по курсу <<Параллельные и распределённые системы>>} \\
+\large <<Распараллеливание алгоритма вычисления произведения двух матриц>>
+\end{center}
+
+\normalsize
+
+\vspace{8em}
+
+\begin{flushright}
+Студент группы ИУ9-51Б \\
+Шалимов Д. И. \\
+\vspace{2ex}
+Преподаватель Вишняков И. Э.
+\end{flushright}
+
+\bigskip
+\vfill
+
+\begin{center}
+\textsl{Москва 2026}
+\end{center}
+\end{titlepage}
+
+\setcounter{page}{2}
+\tableofcontents
+\newpage
+
+\section{Цель работы}
+
+Цель работы --- реализовать стандартный алгоритм умножения двух квадратных
+матриц без использования библиотечных функций матричного умножения, сравнить
+обход результата по строкам и по столбцам, а также получить многопоточную
+реализацию и оценить её ускорение.
+
+\section{Постановка задачи}
+
+Пусть даны две квадратные матрицы $A$ и $B$ порядка $n$. Необходимо вычислить
+матрицу $C = AB$ по формуле
+\[
+    c_{ij} = \sum_{k=0}^{n-1} a_{ik}b_{kj}.
+\]
+
+Требовалось:
+\begin{enumerate}
+    \item реализовать последовательное умножение с обходом элементов $C$ по
+    строкам и по столбцам;
+    \item разбить матрицу $C$ на приблизительно равные прямоугольные блоки;
+    \item поручить вычисление каждого блока отдельному worker;
+    \item дождаться завершения всех worker и проверить полученную матрицу
+    сравнением с последовательным результатом;
+    \item измерить время при различном числе worker.
+\end{enumerate}
+
+\section{Реализация}
+
+Программа написана на языке Go. Матрица хранится в одном непрерывном массиве
+значений типа \texttt{int64}; элемент с индексами $(i, j)$ расположен по
+индексу $i \cdot n + j$. Такой способ хранения уменьшает число выделений памяти
+по сравнению с представлением в виде массива строк.
+
+Последовательные функции \texttt{multiplyByRows} и
+\texttt{multiplyByColumns} используют одну и ту же формулу умножения, но
+меняют порядок обхода элементов результирующей матрицы. Время измеряется
+функциями пакета \texttt{time}.
+
+В параллельном варианте функция \texttt{chooseGrid} выбирает близкое к квадрату
+разбиение числа worker на число блоков по строкам и столбцам. Затем
+\texttt{splitRange} определяет границы блоков. Для каждого прямоугольного блока
+матрицы $C$ запускается goroutine, которая вызывает \texttt{multiplyBlock}.
+Записываемые областями $C$ не пересекаются, поэтому взаимное исключение не
+требуется. Главная goroutine ожидает всех работников с помощью
+\texttt{sync.WaitGroup}.
+
+После вычисления каждого параллельного результата он сравнивается с
+последовательным эталоном. Сравнение выполняется после остановки таймера и не
+входит в измеряемое время.
+
+Основная команда для параллельного измерения имеет вид:
+\begin{lstlisting}[language={},caption={Команда запуска измерения}]
+go run . -mode parallel -size 2000 -workers 1,2,4,8,16,32,64 -runs 1
+\end{lstlisting}
+
+Результат выполнения команды:
+\begin{lstlisting}[language={},caption={Вывод программы для матриц 2000 x 2000}]
+Matrix size: 2000 x 2000
+Runs: 1
+Logical CPUs: 16
+Average sequential: 69.692656 s
+
+Workers:  1 | Average: 121.451177 s | Speedup: 0.57x | Correct: true
+Workers:  2 | Average: 65.202028 s | Speedup: 1.07x | Correct: true
+Workers:  4 | Average: 33.891092 s | Speedup: 2.06x | Correct: true
+Workers:  8 | Average: 19.425680 s | Speedup: 3.59x | Correct: true
+Workers: 16 | Average: 11.251349 s | Speedup: 6.19x | Correct: true
+Workers: 32 | Average: 18.142209 s | Speedup: 3.84x | Correct: true
+Workers: 64 | Average: 18.133077 s | Speedup: 3.84x | Correct: true
+\end{lstlisting}
+
+Параметр \texttt{-runs} задаёт количество повторов. При значении больше одного
+программа выводит среднее арифметическое измеренных времён.
+
+\section{Условия эксперимента}
+
+Измерения выполнены на следующем устройстве:
+\begin{itemize}
+    \item операционная система --- Windows 11 Enterprise 24H2;
+    \item процессор --- Intel Core i5-13500H, базовая частота 2.60 ГГц;
+    \item физических ядер --- 12;
+    \item логических ядер --- 16;
+    \item оперативная память --- 16 ГБ, 5200 MT/s;
+    \item версия Go --- 1.27.0.
+\end{itemize}
+
+Перед началом вычислений программа устанавливает
+\texttt{GOMAXPROCS} равным количеству доступных логических процессоров, то есть
+16. Матрицы заполняются псевдослучайными числами от $-10$ до $10$ с
+фиксированными начальными значениями генератора, поэтому входные данные
+воспроизводимы.
+
+\section{Результаты измерений}
+
+\subsection{Серия измерений для матриц 1000 \texorpdfstring{$\times$}{x} 1000}
+
+В этой серии для каждого варианта выполнено по десять запусков. В таблице
+\ref{tab:sequential1000} приведены результаты последовательного режима.
+
+\begin{table}[ht]
+\centering
+\caption{Последовательное умножение матриц 1000 \texorpdfstring{$\times$}{x} 1000}
+\label{tab:sequential1000}
+\begin{tabular}{lc}
+\toprule
+Порядок обхода $C$ & Среднее время, с \\
+\midrule
+По строкам & 2.928694 \\
+По столбцам & 3.035877 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+В отдельном параллельном измерении среднее время последовательного эталона,
+вычисленного в той же серии, составило 2.365027 с. Отличие от таблицы
+\ref{tab:sequential1000} связано с тем, что это разные серии запусков; на
+время влияют текущая загрузка и изменение частоты процессора.
+
+\begin{table}[ht]
+\centering
+\caption{Параллельное умножение матриц 1000 \texorpdfstring{$\times$}{x} 1000, 10 запусков}
+\label{tab:parallel1000}
+\begin{tabular}{rrrr}
+\toprule
+Worker & Среднее время, с & Ускорение & Проверка \\
+\midrule
+1  & 2.476245 & 0.96 & true \\
+2  & 1.267968 & 1.87 & true \\
+4  & 0.714003 & 3.31 & true \\
+8  & 0.505790 & 4.68 & true \\
+16 & 0.503849 & 4.69 & true \\
+32 & 0.510546 & 4.63 & true \\
+64 & 0.529164 & 4.47 & true \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Измерение для матриц 2000 \texorpdfstring{$\times$}{x} 2000}
+
+Для более крупной матрицы выполнен один запуск каждого варианта
+(\texttt{-runs 1}). Последовательный эталон занял 69.692656 с. Все результаты
+параллельных вычислений совпали с ним.
+
+\begin{table}[ht]
+\centering
+\caption{Параллельное умножение матриц 2000 \texorpdfstring{$\times$}{x} 2000}
+\label{tab:parallel2000}
+\begin{tabular}{rrrr}
+\toprule
+Worker & Время, с & Ускорение & Проверка \\
+\midrule
+1  & 121.451177 & 0.57 & true \\
+2  & 65.202028  & 1.07 & true \\
+4  & 33.891092  & 2.06 & true \\
+8  & 19.425680  & 3.59 & true \\
+16 & 11.251349  & 6.19 & true \\
+32 & 18.142209  & 3.84 & true \\
+64 & 18.133077  & 3.84 & true \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+На рисунке \ref{fig:time2000} приведён график времени вычисления в зависимости
+от числа worker для матриц порядка 2000. По оси абсцисс указано число worker,
+по оси ординат --- время вычисления в секундах.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    width=0.92\textwidth,
+    height=8cm,
+    xlabel={Число worker},
+    ylabel={Время, с},
+    symbolic x coords={1,2,4,8,16,32,64},
+    xtick=data,
+    ymin=0,
+    ymax=130,
+    grid=major,
+    bar width=13pt,
+    nodes near coords,
+    every node near coord/.append style={font=\scriptsize, rotate=90, anchor=west}
+]
+\addplot coordinates {
+    (1,121.451177)
+    (2,65.202028)
+    (4,33.891092)
+    (8,19.425680)
+    (16,11.251349)
+    (32,18.142209)
+    (64,18.133077)
+};
+\end{axis}
+\end{tikzpicture}
+\caption{Зависимость времени умножения матриц 2000 \texorpdfstring{$\times$}{x} 2000 от числа worker}
+\label{fig:time2000}
+\end{figure}
+
+\section{Анализ результатов}
+
+Увеличение числа worker от 1 до 16 уменьшает время вычисления. Для матриц
+2000 \texorpdfstring{$\times$}{x} 2000 наибольшее ускорение равно 6.19 и
+достигается при 16 worker. Это число совпадает с количеством логических ядер
+процессора.
+
+Один worker работает медленнее последовательного варианта: добавляются расходы
+на создание goroutine, разбиение на блоки и ожидание в \texttt{WaitGroup}.
+После 16 worker производительность уменьшается. При 32 и 64 worker несколько
+задач конкурируют за одни и те же вычислительные ресурсы, а расходы планировщика
+и влияние кэш-памяти становятся заметнее.
+
+Windows позволяет изменять приоритеты процессов и потоков, однако в проведённых
+измерениях приоритет не менялся: все запуски выполнялись с нормальным
+приоритетом. Поэтому сравнение с высоким и низким приоритетами не приводится;
+для такого сравнения необходимо выполнить отдельные серии запусков в одинаковых
+условиях.
+
+\section{Вывод}
+
+Реализовано последовательное и параллельное умножение квадратных матриц на Go.
+Корректность каждого параллельного результата подтверждена сравнением с
+последовательным эталоном. Наиболее эффективным для проведённого измерения
+оказалось использование 16 worker: для матриц 2000 \texorpdfstring{$\times$}{x}
+2000 время уменьшилось с 69.692656 с до 11.251349 с, что соответствует
+ускорению 6.19 раза. Увеличение числа worker сверх числа логических ядер не
+привело к дополнительному ускорению.
+
+\appendix
+\newpage
+\section{Листинги программы}
+
+\begin{lstlisting}[caption={Файл 	exttt{main.go}}]
+package main
+
+import (
+    "flag"
+    "fmt"
+    "os"
+    "runtime"
+    "strconv"
+    "strings"
+    "time"
+)
+
+func main() {
+    mode := flag.String("mode", "parallel", "benchmark mode: sequential or parallel")
+    size := flag.Int("size", 1000, "square matrix size")
+    workerList := flag.String("workers", "1,2,4,8,16,32,64", "comma-separated worker counts")
+    runs := flag.Int("runs", 10, "number of measured runs")
+    flag.Parse()
+
+    if *size <= 0 {
+        fail("-size must be positive")
+    }
+    if *runs <= 0 {
+        fail("-runs must be positive")
+    }
+    runtime.GOMAXPROCS(runtime.NumCPU())
+    a := generateMatrix(*size, -10, 10, 1)
+    b := generateMatrix(*size, -10, 10, 2)
+
+    switch *mode {
+    case "sequential":
+        runSequential(a, b, *runs)
+    case "parallel":
+        workers, err := parseWorkers(*workerList)
+        if err != nil {
+            fail(err.Error())
+        }
+        runParallel(a, b, workers, *runs)
+    default:
+        fail("-mode must be sequential or parallel")
+    }
+}
+
+func runSequential(a, b Matrix, runs int) {
+    var rowsTotal time.Duration
+    var columnsTotal time.Duration
+    correct := true
+
+    for run := 0; run < runs; run++ {
+        rowsStarted := time.Now()
+        byRows := multiplyByRows(a, b)
+        rowsTotal += time.Since(rowsStarted)
+
+        columnsStarted := time.Now()
+        byColumns := multiplyByColumns(a, b)
+        columnsTotal += time.Since(columnsStarted)
+
+        correct = correct && matricesEqual(byRows, byColumns)
+    }
+
+    fmt.Printf("Matrix size: %d x %d\n", a.N, a.N)
+    fmt.Printf("Runs: %d\n", runs)
+    fmt.Printf("Average by rows:    %.6f s\n", average(rowsTotal, runs))
+    fmt.Printf("Average by columns: %.6f s\n", average(columnsTotal, runs))
+    fmt.Printf("Results are equal: %t\n", correct)
+}
+
+type workerStats struct {
+    count   int
+    total   time.Duration
+    correct bool
+}
+
+func runParallel(a, b Matrix, workers []int, runs int) {
+    stats := make([]workerStats, len(workers))
+    for index, count := range workers {
+        stats[index] = workerStats{count: count, correct: true}
+    }
+
+    var sequentialTotal time.Duration
+    for run := 0; run < runs; run++ {
+        referenceStarted := time.Now()
+        reference := multiplyByRows(a, b)
+        sequentialTotal += time.Since(referenceStarted)
+
+        for index := range stats {
+            started := time.Now()
+            result, err := multiplyParallel(a, b, stats[index].count)
+            stats[index].total += time.Since(started)
+            if err != nil {
+                fail(err.Error())
+            }
+            stats[index].correct = stats[index].correct && matricesEqual(reference, result)
+        }
+    }
+
+    sequentialAverage := average(sequentialTotal, runs)
+    fmt.Printf("Matrix size: %d x %d\n", a.N, a.N)
+    fmt.Printf("Runs: %d\n", runs)
+    fmt.Printf("Logical CPUs: %d\n", runtime.GOMAXPROCS(0))
+    fmt.Printf("Average sequential: %.6f s\n\n", sequentialAverage)
+
+    for _, stat := range stats {
+        workerAverage := average(stat.total, runs)
+        fmt.Printf(
+            "Workers: %2d | Average: %.6f s | Speedup: %.2fx | Correct: %t\n",
+            stat.count,
+            workerAverage,
+            sequentialAverage/workerAverage,
+            stat.correct,
+        )
+    }
+}
+
+func average(total time.Duration, runs int) float64 {
+    return total.Seconds() / float64(runs)
+}
+
+func parseWorkers(value string) ([]int, error) {
+    parts := strings.Split(value, ",")
+    workers := make([]int, 0, len(parts))
+    for _, part := range parts {
+        count, err := strconv.Atoi(strings.TrimSpace(part))
+        if err != nil || count <= 0 {
+            return nil, fmt.Errorf("invalid worker count %q", part)
+        }
+        workers = append(workers, count)
+    }
+    return workers, nil
+}
+
+func fail(message string) {
+    fmt.Println("Error:", message)
+    flag.Usage()
+    os.Exit(2)
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Файл 	exttt{matrix.go}}]
+package main
+
+import "math/rand"
+
+type Matrix struct {
+    N    int
+    Data []int64
+}
+
+func newMatrix(n int) Matrix {
+    return Matrix{N: n, Data: make([]int64, n*n)}
+}
+
+func (m Matrix) at(row, column int) int64 {
+    return m.Data[row*m.N+column]
+}
+
+func (m Matrix) set(row, column int, value int64) {
+    m.Data[row*m.N+column] = value
+}
+
+func generateMatrix(n, low, high int, seed int64) Matrix {
+    if n <= 0 {
+        panic("matrix size must be positive")
+    }
+    if low > high {
+        panic("low bound must not exceed high bound")
+    }
+
+    rng := rand.New(rand.NewSource(seed))
+    matrix := newMatrix(n)
+    for index := range matrix.Data {
+        matrix.Data[index] = int64(rng.Intn(high-low+1) + low)
+    }
+    return matrix
+}
+
+func matricesEqual(first, second Matrix) bool {
+    if first.N != second.N || len(first.Data) != len(second.Data) {
+        return false
+    }
+    for index, value := range first.Data {
+        if value != second.Data[index] {
+            return false
+        }
+    }
+    return true
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Файл 	exttt{multiply.go}}]
+package main
+
+import (
+    "fmt"
+    "math"
+    "sync"
+)
+
+func multiplyByRows(a, b Matrix) Matrix {
+    ensureCompatible(a, b)
+    c := newMatrix(a.N)
+
+    for row := 0; row < a.N; row++ {
+        multiplyBlock(a, b, c, row, row+1, 0, a.N)
+    }
+    return c
+}
+
+func multiplyByColumns(a, b Matrix) Matrix {
+    ensureCompatible(a, b)
+    c := newMatrix(a.N)
+
+    for column := 0; column < a.N; column++ {
+        multiplyBlock(a, b, c, 0, a.N, column, column+1)
+    }
+    return c
+}
+
+func multiplyBlock(a, b, c Matrix, rowStart, rowEnd, columnStart, columnEnd int) {
+    for row := rowStart; row < rowEnd; row++ {
+        rowOffset := row * a.N
+        for column := columnStart; column < columnEnd; column++ {
+            var value int64
+            for k := 0; k < a.N; k++ {
+                value += a.Data[rowOffset+k] * b.Data[k*a.N+column]
+            }
+            c.Data[rowOffset+column] = value
+        }
+    }
+}
+
+type interval struct {
+    start int
+    end   int
+}
+
+func splitRange(size, parts int) []interval {
+    ranges := make([]interval, parts)
+    for part := range parts {
+        ranges[part] = interval{
+            start: part * size / parts,
+            end:   (part + 1) * size / parts,
+        }
+    }
+    return ranges
+}
+
+func chooseGrid(workers, n int) (rowBlocks, columnBlocks int, err error) {
+    if workers <= 0 {
+        return 0, 0, fmt.Errorf("worker count must be positive")
+    }
+    if workers > n*n {
+        return 0, 0, fmt.Errorf("too many workers for a %dx%d matrix", n, n)
+    }
+
+    upper := int(math.Sqrt(float64(workers)))
+    for rowBlocks = upper; rowBlocks >= 1; rowBlocks-- {
+        if workers%rowBlocks != 0 {
+            continue
+        }
+        columnBlocks = workers / rowBlocks
+        if rowBlocks <= n && columnBlocks <= n {
+            return rowBlocks, columnBlocks, nil
+        }
+    }
+    return 0, 0, fmt.Errorf("cannot split %d workers into non-empty blocks for size %d", workers, n)
+}
+
+func multiplyParallel(a, b Matrix, workers int) (Matrix, error) {
+    ensureCompatible(a, b)
+    rowBlocks, columnBlocks, err := chooseGrid(workers, a.N)
+    if err != nil {
+        return Matrix{}, err
+    }
+
+    c := newMatrix(a.N)
+    rowRanges := splitRange(a.N, rowBlocks)
+    columnRanges := splitRange(a.N, columnBlocks)
+
+    var group sync.WaitGroup
+    group.Add(workers)
+    for _, rows := range rowRanges {
+        for _, columns := range columnRanges {
+            go func(rows, columns interval) {
+                defer group.Done()
+                multiplyBlock(a, b, c, rows.start, rows.end, columns.start, columns.end)
+            }(rows, columns)
+        }
+    }
+    group.Wait()
+
+    return c, nil
+}
+
+func ensureCompatible(a, b Matrix) {
+    if a.N == 0 || a.N != b.N || len(a.Data) != a.N*a.N || len(b.Data) != b.N*b.N {
+        panic("matrices must be non-empty squares of the same size")
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language={},caption={Файл 	exttt{go.mod}}]
+module bmstu/parallel-lab1
+
+go 1.26.3
+\end{lstlisting}
+
+\end{document}
