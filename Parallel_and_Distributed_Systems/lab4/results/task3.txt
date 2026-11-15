@@ -1,0 +1,8 @@
+Task 3
+Go: go1.27.0
+GOMAXPROCS: 16
+Repeats: 3
+Prime <= 1000000: 999983
+20000! bits: 256909
+F(200000) bits: 138848
+All answers checked.

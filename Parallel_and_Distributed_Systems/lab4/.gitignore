@@ -1,0 +1,4 @@
+# Keep report figures despite the root image exclusion.
+!images/
+!images/*.png
+!task.pdf

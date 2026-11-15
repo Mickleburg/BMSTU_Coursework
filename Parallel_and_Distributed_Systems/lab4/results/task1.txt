@@ -1,0 +1,8 @@
+Task 1
+Go: go1.27.0
+GOMAXPROCS: 16
+Repeats: 3
+Field: 256x256
+Steps: 20
+Seed: 1
+All generations checked.

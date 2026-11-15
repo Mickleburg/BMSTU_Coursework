@@ -1,0 +1,6 @@
+task,workers,mean_total_s,mean_step_or_total_s
+evolution,0,0.026296767,0.001314838
+evolution,1,0.028217567,0.001410878
+evolution,2,0.018955200,0.000947760
+evolution,4,0.015086967,0.000754348
+evolution,8,0.010078933,0.000503947
