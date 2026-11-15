@@ -1,0 +1,12 @@
+﻿Implementation: MPI
+Method: simple iteration
+Matrix size: 16000
+Task: known
+Epsilon: 1.000000000000e-12
+Tau: 6.250000000000e-06
+Processes: 8
+Iterations: 263
+Relative residual: 4.639824613892e-13
+Max solution error: 8.618661340165e-13
+Converged: true
+Time: 16.688132 s

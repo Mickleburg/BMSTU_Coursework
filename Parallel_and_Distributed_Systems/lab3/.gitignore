@@ -2,3 +2,6 @@
 !results/
 !results/**/
 !results/**/timeline.png
+
+# Figures required by the Overleaf report
+!images/*.png

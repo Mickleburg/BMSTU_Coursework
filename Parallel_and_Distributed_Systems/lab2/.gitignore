@@ -1,0 +1,5 @@
+# Keep the measured graph despite the repository-wide PNG exclusion.
+!results/graphs.png
+
+# Figures required by the Overleaf report
+!images/*.png
